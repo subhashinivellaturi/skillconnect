@@ -1,0 +1,178 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{ freelancer.get_full_name|default:freelancer.username }} · Freelancer Profile</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --accent1:#22c55e;
+  --accent2:#3b82f6;
+  --accent3:#a855f7;
+  --muted:#94a3b8;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Poppins,system-ui;
+  background:linear-gradient(180deg,#020617,#020617,#020617);
+  color:#e5e7eb;
+  padding:24px;
+}
+
+.wrap{max-width:1100px;margin:auto}
+
+/* layout */
+.grid{
+  display:grid;
+  grid-template-columns:360px 1fr;
+  gap:22px;
+}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+
+.card{
+  background:linear-gradient(180deg,rgba(168,85,247,.25),rgba(37,99,235,.3));
+  border-radius:16px;
+  padding:18px;
+  border:1px solid rgba(255,255,255,.08);
+  animation:float 6s ease-in-out infinite;
+}
+@keyframes float{50%{transform:translateY(-6px)}}
+
+/* avatar */
+.avatar-wrap{
+  width:120px;height:120px;
+  border-radius:16px;
+  overflow:hidden;
+  box-shadow:0 20px 40px rgba(0,0,0,.6);
+}
+.avatar{width:100%;height:100%;object-fit:cover}
+
+/* chips */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.chip{
+  font-size:12px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.1);
+}
+
+/* buttons */
+.btn{
+  padding:8px 14px;
+  border-radius:999px;
+  font-weight:700;
+  border:0;
+  cursor:pointer;
+}
+.btn-primary{
+  background:linear-gradient(90deg,var(--accent1),var(--accent2));
+  color:#021;
+}
+.btn-outline{
+  background:transparent;
+  border:1px solid rgba(255,255,255,.2);
+  color:#e5e7eb;
+}
+
+/* sections */
+.section-title{
+  font-weight:800;
+  margin-bottom:6px;
+}
+.muted{color:var(--muted);font-size:14px}
+</style>
+</head>
+
+<body>
+<div class="wrap">
+
+<div class="grid">
+
+<!-- LEFT PROFILE -->
+<aside class="card">
+  <div style="display:flex;gap:14px;align-items:center">
+    <div class="avatar-wrap">
+      {% if freelancer.profile.profile_image %}
+        <img src="{{ freelancer.profile.profile_image.url }}" class="avatar">
+      {% else %}
+        <img src="{% static 'marketplace/default-avatar.png' %}" class="avatar">
+      {% endif %}
+    </div>
+
+    <div>
+      <h2 style="margin:0">{{ freelancer.get_full_name|default:freelancer.username }}</h2>
+      <div class="muted">Freelancer · {{ freelancer.profile.city|default:"Remote" }}</div>
+    </div>
+  </div>
+
+  <p class="muted" style="margin-top:12px">
+    {{ freelancer.profile.bio|default:"Passionate freelancer building quality digital solutions." }}
+  </p>
+
+  <div style="margin-top:12px">
+    <button class="btn btn-primary">Hire Me</button>
+    <button class="btn btn-outline">Message</button>
+  </div>
+</aside>
+
+<!-- RIGHT DETAILS -->
+<main style="display:flex;flex-direction:column;gap:18px">
+
+<!-- Education -->
+<div class="card">
+  <div class="section-title">🎓 Education</div>
+  <div class="muted">
+    {{ freelancer.profile.education|default:"Not added yet" }}
+  </div>
+</div>
+
+<!-- Experience -->
+<div class="card">
+  <div class="section-title">💼 Experience</div>
+  <div class="muted">
+    {{ freelancer.profile.experience|default:"Fresher / Open to opportunities" }}
+  </div>
+</div>
+
+<!-- Tech Stack -->
+<div class="card">
+  <div class="section-title">🛠 Tech Stack</div>
+  <div class="chips">
+    {% if tech_stack_list %}
+      {% for tech in tech_stack_list %}
+        <div class="chip">{{ tech }}</div>
+      {% endfor %}
+    {% else %}
+      <div class="chip">Python</div>
+      <div class="chip">Django</div>
+      <div class="chip">HTML/CSS</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Skills -->
+<div class="card">
+  <div class="section-title">⭐ Skills</div>
+  <div class="chips">
+    {% if skills_list %}
+      {% for skill in skills_list %}
+        <div class="chip">{{ skill }}</div>
+      {% endfor %}
+    {% else %}
+      <div class="chip">Problem Solving</div>
+      <div class="chip">Communication</div>
+    {% endif %}
+  </div>
+</div>
+
+</main>
+
+</div>
+</div>
+</body>
+</html>

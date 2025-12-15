@@ -1,0 +1,357 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{{ recruiter.get_full_name|default:request.user.username }} — Recruiter Profile · SkillConnect</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* ===============================
+   GLOBAL BACKGROUND ANIMATION
+   =============================== */
+body {
+  background-size: 400% 400%;
+  animation: gradientBG 18s ease infinite;
+}
+
+@keyframes gradientBG {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* ===============================
+   PROFILE CARD SOFT GLOW ANIMATION
+   =============================== */
+.profile-card {
+  animation: cardGlow 6s ease-in-out infinite alternate;
+}
+
+@keyframes cardGlow {
+  0% {
+    box-shadow: 0 0 20px rgba(52, 211, 153, 0.25),
+                0 0 40px rgba(96, 165, 250, 0.15);
+  }
+  100% {
+    box-shadow: 0 0 35px rgba(167, 139, 250, 0.35),
+                0 0 70px rgba(52, 211, 153, 0.25);
+  }
+}
+
+/* ===============================
+   AVATAR GLOW PULSE
+   =============================== */
+.avatar-glow {
+  animation: avatarPulse 4s ease-in-out infinite;
+}
+
+@keyframes avatarPulse {
+  0% {
+    transform: translate(14px, -14px) scale(1);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translate(10px, -10px) scale(1.08);
+    opacity: 0.35;
+  }
+  100% {
+    transform: translate(14px, -14px) scale(1);
+    opacity: 0.25;
+  }
+}
+
+/* ===============================
+   RIGHT PANEL CARD FLOAT EFFECT
+   =============================== */
+.card {
+  animation: floatCard 5s ease-in-out infinite;
+}
+
+@keyframes floatCard {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+
+
+
+    :root{
+      --bg:#0f2416;
+      --card:#0c200b;
+      --glass: rgba(255,255,255,0.04);
+      --accent1:#34d399; /* green */
+      --accent2:#60a5fa; /* blue */
+      --accent3:#a78bfa; /* purple */
+      --muted:#94a3b8;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Poppins,system-ui;min-height:100vh;background:linear-gradient(180deg,#071026 0%, #071830 60%);color:#e6eefc;padding:24px}
+    .wrap{max-width:1100px;margin:0 auto}
+
+    /* top nav small */
+    .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+    .brand{display:flex;align-items:center;gap:10px}
+    .logo{width:44px;height:44;border-radius:10px;background:linear-gradient(135deg,var(--accent1),var(--accent2));display:grid;place-items:center;font-weight:800;color:#021;box-shadow:0 8px 30px rgba(37,99,235,0.12)}
+    .site-title{font-weight:700;font-size:18px}
+
+    /* main grid */
+    .grid{display:grid;grid-template-columns:360px 1fr;gap:22px;align-items:start}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}}
+
+    /* left profile card */
+    .profile-card{background:linear-gradient(180deg, rgba(194, 11, 207, 0.87), rgba(13, 37, 170, 0.675));border-radius:16px;padding:18px;border:1px solid rgba(255,255,255,0.03);position:relative;overflow:hidden}
+    .profile-top{display:flex;gap:14px;align-items:center}
+
+    .avatar-wrap{position:relative;width:110px;height:110px;border-radius:14px;flex-shrink:0;overflow:hidden;box-shadow:0 18px 40px rgba(10,14,30,0.6)}
+    .avatar{width:100%;height:100%;object-fit:cover;display:block}
+
+    /* animated gradient behind avatar */
+    .avatar-glow{position:absolute;inset:auto -20px -20px auto;width:160px;height:160px;border-radius:50%;filter:blur(32px);opacity:0.28;pointer-events:none;background:conic-gradient(from 180deg,var(--accent2),var(--accent3),var(--accent1));transform:translate(14px,-14px);}
+
+    .profile-main h2{margin:0;font-size:18px}
+    .profile-main .role{color:var(--muted);font-size:13px;margin-top:6px}
+
+    .metrics{display:flex;gap:10px;margin-top:14px}
+    .metric{background:linear-gradient(180deg,rgba(9, 52, 204, 0.893),rgba(255,255,255,0.01));padding:10px;border-radius:10px;min-width:92px;text-align:center;border:1px solid rgba(255,255,255,0.03)}
+    .metric .num{font-weight:800;font-size:16px}
+    .metric .lbl{font-size:12px;color:var(--muted)}
+
+    .cta-buttons{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap}
+    .btn{padding:9px 12px;border-radius:999px;border:0;cursor:pointer;font-weight:700}
+    .btn-primary{background:linear-gradient(90deg,var(--accent2),var(--accent3));color:#021}
+    .btn-outline{background:transparent;border:1px solid rgba(255,255,255,0.06);color:#e6eefc}
+
+    /* contact / bio */
+    .bio{margin-top:14px;color:var(--muted);font-size:14px}
+    .contact{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+    .contact a{color:var(--accent2);text-decoration:none;font-weight:600}
+
+    /* badges */
+    .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .badge{background:linear-gradient(90deg,rgba(255,255,255,0.02),rgba(255,255,255,0.01));padding:6px 10px;border-radius:999px;font-size:13px;border:1px solid rgba(255,255,255,0.03)}
+
+    /* right section */
+    .right-panel{display:flex;flex-direction:column;gap:18px}
+    .card{background:linear-gradient(180deg, rgba(184, 13, 193, 0.879), rgba(11, 74, 201, 0.918));border-radius:14px;padding:18px;border:1px solid rgba(255,255,255,0.03)}
+
+    /* activity timeline */
+    .timeline{display:flex;flex-direction:column;gap:10px}
+    .event{display:flex;gap:12px;align-items:flex-start}
+    .event .dot{width:12px;height:12px;border-radius:50%;background:var(--accent2);margin-top:6px;box-shadow:0 8px 18px rgba(96,165,250,0.12)}
+    .event .body{color:var(--muted);font-size:14px}
+
+    /* posted jobs table */
+    .jobs-list{display:grid;gap:10px}
+    .job-card{padding:12px;border-radius:10px;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(255,255,255,0.005));display:flex;justify-content:space-between;align-items:center;border:1px solid rgba(255,255,255,0.02)}
+    .job-title{font-weight:700}
+    .job-meta{color:var(--muted);font-size:13px}
+
+    /* edit modal (simple) */
+    .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(2,6,23,0.6),rgba(2,6,23,0.75));z-index:60}
+    .modal.show{display:flex}
+    .modal-card{background:#071026;padding:18px;border-radius:12px;width:420px;border:1px solid rgba(255,255,255,0.03)}
+    .input{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:#e6eefc}
+
+    /* small animation for header wave */
+    .wave{position:absolute;right:-40px;top:-40px;width:280px;height:280px;border-radius:50%;filter:blur(50px);opacity:0.12;background:conic-gradient(from 180deg,var(--accent3),var(--accent2),var(--accent1));transform:rotate(20deg)}
+
+    /* responsive tweaks */
+    @media(max-width:900px){.avatar-wrap{margin:0 auto}.profile-top{flex-direction:column;align-items:center}.profile-main{text-align:center}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand"><div class="logo">S</div><div class="site-title">SkillConnect</div></div>
+      <div>
+        <a href="{% url 'home' %}" style="color:var(--muted);text-decoration:none;margin-right:12px">Home</a>
+        <a href="{% url 'job_list' %}" style="color:var(--muted);text-decoration:none">Jobs</a>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT: recruiter profile card -->
+      <aside class="profile-card">
+        <div class="wave" aria-hidden="true"></div>
+        <div class="profile-top">
+          <div class="avatar-wrap">
+            {% if recruiter.profile.profile_image %}
+              <img src="{{ recruiter.profile.profile_image.url }}" class="avatar">
+            {% else %}
+            <img src="{% static 'marketplace/default-avatar.png' %}" class="avatar">
+            {% endif %}
+            <div class="avatar-glow" aria-hidden="true"></div>
+          </div>
+
+          <div class="profile-main">
+            <h2>{{ recruiter.get_full_name|default:recruiter.username }}</h2>
+            <div class="role">Recruiter · {{ recruiter.company|default:'Independent' }}</div>
+
+            <div class="badges">
+              {% if recruiter.is_verified %}<div class="badge">Verified</div>{% endif %}
+              <div class="badge">Member since {{ recruiter.date_joined|date:'M Y' }}</div>
+              <div class="badge">Verified: {{ recruiter.profile_city|default:'✅' }}</div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="metrics">
+          <div class="metric"><div class="num">{{ recruiter.jobs.count }}</div><div class="lbl">Jobs posted</div></div>
+          <div class="metric"><div class="num">{{ recruiter.hires_count|default:0 }}</div><div class="lbl">Hires</div></div>
+          <div class="metric"><div class="num">{{ recruiter.proposals_received_count|default:0 }}</div><div class="lbl">Proposals</div></div>
+        </div>
+
+        <div class="cta-buttons">
+          <button class="btn btn-primary" onclick="recordCTA('open_profile_app')">Open dashboard</button>
+          <a href="{% url 'job_create' %}" class="btn btn-outline">Post a job</a>
+          <button class="btn btn-outline" id="editProfileBtn">Edit profile</button>
+        </div>
+        <div class="role">Recruiter · {{ recruiter.profile.company|default:"Independent" }}</div>
+        <div class="badge">Location: {{ recruiter.profile.city|default:"" }}</div>
+
+
+
+        <div class="bio">{{ recruiter.profile.bio|default:"Tell the world about your company and what kind of talent you hire." }}</div>
+
+
+        <div class="contact">
+          <a href="mailto:{{ recruiter.email }}">{{ recruiter.email }}</a>
+          <a href="{{ recruiter.company_website|default:'#' }}" target="_blank">{{ recruiter.company_website|default:"Website" }}</a>
+        </div>
+      </aside>
+
+      <!-- RIGHT: activity, posted jobs -->
+      <main class="right-panel">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-weight:800">Recent activity</div>
+              <div style="color:var(--muted);font-size:13px">Updates from your projects & proposals</div>
+            </div>
+            <div style="color:var(--muted);font-size:13px">Server: <span id="server_time">—</span></div>
+          </div>
+
+          <div class="timeline" style="margin-top:12px">
+            {% for ev in recent_activity %}
+              <div class="event">
+                <div class="dot"></div>
+                <div class="body"><strong>{{ ev.title }}</strong> · <span style="color:var(--muted)">{{ ev.created_at|timesince }} ago</span><div style="color:var(--muted);margin-top:6px">{{ ev.summary }}</div></div>
+              </div>
+            {% empty %}
+              <div class="event"><div class="dot"></div><div class="body" style="color:var(--muted)">No recent activity yet.</div></div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div style="font-weight:800">Your job posts</div>
+            <a href="{% url 'job_create' %}" class="btn btn-primary">New job</a>
+          </div>
+
+          <div class="jobs-list">
+            {% for job in posted_jobs %}
+              <div class="job-card">
+                <div>
+                  <div class="job-title">{{ job.title }}</div>
+                  <div class="job-meta">{{ job.budget_min }} - {{ job.budget_max }} · {{ job.created_at|date:'d M Y' }}</div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <a href="{% url 'job_detail' job.pk %}" class="btn btn-outline">View</a>
+                  <a href="{% url 'job_edit' job.pk %}" class="btn btn-outline">Edit</a>
+                </div>
+              </div>
+            {% empty %}
+              <div class="job-card" style="justify-content:center;color:var(--muted)">You haven't posted any jobs yet.</div>
+            {% endfor %}
+          </div>
+        </div>
+
+      </main>
+    </div>
+
+    <!-- simple modal for edit profile -->
+    <div class="modal" id="editModal" role="dialog" aria-modal="true">
+      <div class="modal-card">
+        <h3 style="margin:0 0 8px">Edit profile</h3>
+        <form method="post" action="{% url 'recruiter_profile_edit' recruiter.pk %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          <label style="font-size:13px;color:var(--muted)">Full name</label>
+          <input class="input" type="text" name="full_name" value="{{ recruiter.get_full_name }}" />
+
+          <label style="font-size:13px;color:var(--muted);margin-top:8px">Company</label>
+          <input class="input" type="text" name="company" value="{{ recruiter.company }}" />
+
+          <label style="font-size:13px;color:var(--muted);margin-top:8px">Profile picture</label>
+          <input class="input" type="file" name="profile_image" accept="image/*" />
+
+          <label style="font-size:13px;color:var(--muted);margin-top:8px">Location</label>
+          <input class="input" type="text" name="profile_city" placeholder="e.g. Bengaluru, India" value="{{ recruiter.profile.city|default_if_none:'' }}"/>
+
+
+          <label style="font-size:13px;color:var(--muted);margin-top:8px">Bio</label>
+          <textarea class="input" name="bio" rows="3">{{ recruiter.bio }}</textarea>
+
+          <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
+            <button type="button" class="btn btn-outline" id="cancelEdit">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+  // server time
+  function updateServerTime(){
+    const s = document.getElementById('server_time');
+    if(s) s.textContent = new Date().toLocaleString();
+  }
+  updateServerTime();
+  setInterval(updateServerTime, 1000);
+
+  // modal open/close
+  const editBtn = document.getElementById('editProfileBtn');
+  const modal = document.getElementById('editModal');
+  const cancel = document.getElementById('cancelEdit');
+
+  if(editBtn){
+    editBtn.addEventListener('click', () => modal.classList.add('show'));
+  }
+  if(cancel){
+    cancel.addEventListener('click', () => modal.classList.remove('show'));
+  }
+
+  // simple CTA placeholder (NO BACKEND CALL)
+  function recordCTA(name){
+    console.log("CTA clicked:", name);
+    // You can later add backend tracking if needed
+  }
+
+  // keyboard close
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape'){
+      modal.classList.remove('show');
+    }
+  });
+</script>
+</body>
+</html>

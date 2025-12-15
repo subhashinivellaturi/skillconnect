@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Browse Jobs · SkillConnect</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #020617, #0ea5e9, #6366f1, #22c55e, #f97316);
+            background-size: 380% 380%;
+            animation: bgMove 18s ease infinite;
+            color: #e5e7eb;
+            padding: 20px;
+        }
+
+        @keyframes bgMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .shell {
+            width: 100%;
+            max-width: 1180px;
+            margin: 0 auto;
+        }
+
+        /* Toasts (reuse from job_create) */
+        .toast-container {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            min-width: 260px;
+            max-width: 340px;
+            padding: 10px 12px;
+            border-radius: 14px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 14px 30px rgba(15,23,42,0.9);
+            animation: toastSlideIn 0.4s ease-out, toastFadeOut 0.4s ease-in 4s forwards;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .toast-icon { font-size: 18px; }
+
+        .toast-success {
+            background: rgba(22,163,74,0.95);
+            color: #ecfdf5;
+            border: 1px solid rgba(187,247,208,0.9);
+        }
+
+        .toast-error {
+            background: rgba(185,28,28,0.95);
+            color: #fee2e2;
+            border: 1px solid rgba(252,165,165,0.9);
+        }
+
+        @keyframes toastSlideIn {
+            from { opacity: 0; transform: translateX(40px) translateY(-10px); }
+            to   { opacity: 1; transform: translateX(0) translateY(0); }
+        }
+
+        @keyframes toastFadeOut {
+            to { opacity: 0; transform: translateX(40px) translateY(-10px); }
+        }
+
+        /* Top bar */
+        .top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 640px) {
+            .top-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+
+        .top-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 16px;
+            background: conic-gradient(from 180deg, #22c55e, #3b82f6, #a855f7, #f97316, #22c55e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0f172a;
+            font-size: 20px;
+            font-weight: 800;
+            box-shadow: 0 0 18px rgba(129,140,248,0.8);
+        }
+
+        .top-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-text span:first-child {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .top-text span:last-child {
+            font-size: 11px;
+            color: #cbd5f5;
+        }
+
+        .top-right {
+            font-size: 11px;
+            color: #e5e7eb;
+            background: rgba(15,23,42,0.7);
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(148,163,184,0.6);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pill-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 10px rgba(34,197,94,0.9);
+        }
+
+        /* Main card */
+        .card {
+            position: relative;
+            background: rgba(15,23,42,0.96);
+            border-radius: 24px;
+            padding: 20px 18px 18px;
+            box-shadow: 0 26px 70px rgba(15,23,42,1);
+            overflow: hidden;
+        }
+
+        .glow-container {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        .glow {
+            position: absolute;
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            filter: blur(30px);
+            opacity: 0.28;
+        }
+
+        .g1 { background: #3b82f6; top: -80px; right: -60px; }
+        .g2 { background: #22c55e; bottom: -60px; left: -40px; }
+        .g3 { background: #f97316; bottom: -100px; right: 10%; opacity: 0.22; }
+
+        .card-inner { position: relative; z-index: 2; }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .header-row {
+                flex-direction: column;
+            }
+        }
+
+        .header-main {
+            max-width: 65%;
+        }
+
+        .page-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .page-sub {
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .page-sub span {
+            color: #a5b4fc;
+            font-weight: 500;
+        }
+
+        .header-side {
+            font-size: 11px;
+            color: #9ca3af;
+            text-align: right;
+        }
+
+        .header-side strong { color: #facc15; }
+
+        .header-actions {
+            margin-top: 8px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 6px 11px;
+            border-radius: 999px;
+            font-size: 11px;
+            border: 1px solid rgba(148,163,184,0.6);
+            background: rgba(15,23,42,0.85);
+            color: #e5e7eb;
+            text-decoration: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-small.primary {
+            border-color: rgba(34,197,94,0.9);
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #ecfdf5;
+            box-shadow: 0 10px 24px rgba(22,163,74,0.85);
+        }
+
+        .btn-small span.icon { font-size: 14px; }
+
+        /* Filters bar */
+        .filters-row {
+            margin-top: 12px;
+            margin-bottom: 10px;
+            display: grid;
+            grid-template-columns: minmax(0, 1.7fr) repeat(3, minmax(0, 0.9fr));
+            gap: 8px;
+        }
+
+        @media (max-width: 900px) {
+            .filters-row {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .filters-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .filter-field {
+            position: relative;
+        }
+
+        .filter-label {
+            font-size: 10px;
+            color: #9ca3af;
+            margin-bottom: 3px;
+        }
+
+        .filter-input, .filter-select {
+            width: 100%;
+            padding: 7px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(75,85,99,0.9);
+            background: rgba(15,23,42,0.9);
+            color: #e5e7eb;
+            font-size: 12px;
+            outline: none;
+            transition: border 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .filter-input:focus,
+        .filter-select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 1px rgba(59,130,246,0.8);
+        }
+
+        .filter-icon {
+            position: absolute;
+            right: 10px;
+            top: 25px;
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        /* Jobs list */
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #9ca3af;
+            margin-top: 4px;
+            margin-bottom: 8px;
+        }
+
+        .list-header span.highlight {
+            color: #a5b4fc;
+            font-weight: 500;
+        }
+
+        .jobs-list {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .jobs-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .jobs-list::-webkit-scrollbar-thumb {
+            background: rgba(75,85,99,0.8);
+            border-radius: 999px;
+        }
+
+        .job-card {
+            border-radius: 16px;
+            padding: 10px 11px;
+            margin-bottom: 9px;
+            background: linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,64,175,0.95));
+            border: 1px solid rgba(75,85,99,0.9);
+            cursor: pointer;
+            transition: 0.18s ease;
+        }
+
+        .job-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 36px rgba(15,23,42,0.95);
+        }
+
+        .job-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .job-title {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .job-status {
+            font-size: 10px;
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: rgba(34,197,94,0.2);
+            color: #bbf7d0;
+        }
+
+        .job-status.in_progress {
+            background: rgba(234,179,8,0.2);
+            color: #facc15;
+        }
+
+        .job-status.completed {
+            background: rgba(34,197,94,0.15);
+            color: #bbf7d0;
+        }
+
+        .job-status.cancelled {
+            background: rgba(248,113,113,0.2);
+            color: #fecaca;
+        }
+
+        .job-meta {
+            font-size: 11px;
+            color: #9ca3af;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .job-meta span.highlight {
+            color: #fbbf24;
+        }
+
+        .job-footer {
+            margin-top: 5px;
+            font-size: 10px;
+            color: #a5b4fc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tag-pill {
+            font-size: 10px;
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: rgba(37,99,235,0.2);
+            color: #bfdbfe;
+        }
+
+        .btn-outline {
+            padding: 5px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(148,163,184,0.8);
+            background: transparent;
+            color: #e5e7eb;
+            font-size: 10px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-outline:hover {
+            background: rgba(15,23,42,0.9);
+        }
+
+        .empty-state {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+
+{% if messages %}
+    <div class="toast-container">
+        {% for message in messages %}
+            <div class="toast toast-{{ message.tags }}">
+                <div class="toast-icon">
+                    {% if "success" in message.tags %}
+                        ✅
+                    {% elif "error" in message.tags %}
+                        ❌
+                    {% else %}
+                        ℹ️
+                    {% endif %}
+                </div>
+                <div>{{ message }}</div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<div class="shell">
+    <!-- Top bar -->
+    <div class="top-row">
+        <div class="top-left">
+            <div class="logo">S</div>
+            <div class="top-text">
+                <span>SkillConnect</span>
+                <span>Browse and manage jobs</span>
+            </div>
+        </div>
+        <div class="top-right">
+            <span class="pill-dot"></span>
+            <span>
+                {{ request.user.first_name|default:"User" }}
+                · {{ request.user.role|title|default:"Member" }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Main card -->
+    <div class="card">
+        <div class="glow-container">
+            <div class="glow g1"></div>
+            <div class="glow g2"></div>
+            <div class="glow g3"></div>
+        </div>
+
+        <div class="card-inner">
+            <div class="header-row">
+                <div class="header-main">
+                    <div class="page-title">
+                        {% if request.user.role == "client" %}
+                            Your Job Posts
+                        {% else %}
+                            Available Jobs
+                        {% endif %}
+                    </div>
+                    <div class="page-sub">
+                        Discover opportunities or manage openings in real-time.
+                        <span>{{ jobs|length|default:"0" }} jobs currently visible.</span>
+                    </div>
+                </div>
+
+                <div class="header-side">
+                    <div>
+                        Showing jobs from <strong>SkillConnect Marketplace</strong>.
+                    </div>
+                    <div class="header-actions">
+                        {% if request.user.role == "client" %}
+                            <a href="{% url 'job_create' %}" class="btn-small primary">
+                                <span class="icon">➕</span>
+                                <span>New Job</span>
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'home' %}" class="btn-small">
+                            <span class="icon">🏠</span>
+                            <span>Home</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters (UI only for now) -->
+            <div class="filters-row">
+                <div class="filter-field">
+                    <div class="filter-label">Search by title / client</div>
+                    <input type="text" class="filter-input" placeholder="e.g. Django developer, logo design…">
+                    <span class="filter-icon">🔍</span>
+                </div>
+
+                <div class="filter-field">
+                    <div class="filter-label">Status</div>
+                    <select class="filter-select">
+                        <option value="">All statuses</option>
+                        <option value="open">Open</option>
+                        <option value="in_progress">In progress</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+
+                <div class="filter-field">
+                    <div class="filter-label">Min Budget (₹)</div>
+                    <input type="number" class="filter-input" placeholder="0">
+                </div>
+
+                <div class="filter-field">
+                    <div class="filter-label">Max Budget (₹)</div>
+                    <input type="number" class="filter-input" placeholder="100000">
+                </div>
+            </div>
+
+            <div class="list-header">
+                <span>
+                    <span class="highlight">{{ jobs|length|default:"0" }}</span> job(s) found
+                </span>
+                <span>Sorted by latest</span>
+            </div>
+
+            <div class="jobs-list">
+                {% if jobs %}
+                    {% for job in jobs %}
+                        <div class="job-card" onclick="window.location.href='{% url 'job_detail' job.pk %}'">
+                            <div class="job-title-row">
+                                <div class="job-title">{{ job.title }}</div>
+                                <div class="job-status {{ job.status }}">
+                                    {{ job.get_status_display }}
+                                </div>
+                            </div>
+
+                            <div class="job-meta">
+                                <span>
+                                    Budget:
+                                    <span class="highlight">
+                                        ₹{{ job.budget_min }} - ₹{{ job.budget_max }}
+                                    </span>
+                                </span>
+                                <span>Posted: {{ job.created_at|date:"d M, Y" }}</span>
+                            </div>
+
+                            <div class="job-footer">
+                                {% if request.user.role == "client" %}
+                                    <span>{{ job.proposals.count }} proposal(s) received</span>
+                                {% else %}
+                                    <span>Client: {{ job.client.first_name|default:"Client" }}</span>
+                                {% endif %}
+
+                                <span>
+                                    <span class="tag-pill">
+                                        {% if job.status == "open" %}
+                                            🔍 Accepting proposals
+                                        {% elif job.status == "in_progress" %}
+                                            🚧 In progress
+                                        {% elif job.status == "completed" %}
+                                            ✅ Completed
+                                        {% else %}
+                                            ⛔ Closed
+                                        {% endif %}
+                                    </span>
+                                    <a href="{% url 'job_detail' job.pk %}" class="btn-outline" onclick="event.stopPropagation();">
+                                        <span>View details</span>
+                                        <span>➜</span>
+                                    </a>
+                                </span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        No jobs found.
+                        {% if request.user.role == "client" %}
+                            Start by posting a new job using the <strong>New Job</strong> button above.
+                        {% else %}
+                            Check back later or update your filters.
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

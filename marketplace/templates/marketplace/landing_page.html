@@ -1,0 +1,330 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SkillConnect — Freelance Marketplace</title>
+
+  <!-- Google font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg1: #9e089c;
+      --accent1: #3b82f6;
+      --accent2: #34d399;
+      --accent3: #a78bfa;
+      --dark: #071026;
+      --muted: #64748b;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      background:
+        radial-gradient(1000px 400px at 10% 10%, rgba(67, 250, 0, 0.973), transparent 8%),
+        linear-gradient(180deg,var(--bg1) 0%, #03c7f3 100%);
+      color:var(--dark);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:28px 20px;
+    }
+
+    .container{ max-width:1200px; margin:0 auto; }
+
+    /* Layout */
+    .grid { display:grid; grid-template-columns: 1fr 480px; gap:28px; align-items:center; }
+    @media (max-width:960px){ .grid{ grid-template-columns: 1fr; } }
+
+    .hero {
+      background: linear-gradient(180deg, rgba(15, 136, 200, 0.96), rgba(95, 223, 91, 0.96));
+      border-radius:18px;
+      padding:28px;
+      box-shadow: 0 18px 50px rgba(243, 128, 4, 0.06);
+      position:relative;
+      overflow:visible;
+    }
+
+    .kicker{
+      display:inline-flex; gap:10px; align-items:center;
+      background:linear-gradient(90deg,#60a5fa33,#34d39922);
+      padding:8px 12px; border-radius:999px; font-weight:600; color:#063047;
+      margin-bottom:14px; animation:float 3.6s ease-in-out infinite;
+    }
+    @keyframes float{50%{transform:translateY(-6px)}}
+
+    h1{ font-size:40px; margin:8px 0 10px; line-height:1.02; color:var(--dark) }
+    @media (max-width:480px){ h1{ font-size:26px } }
+
+    p.lead{ color:#334155; margin:0 0 16px; max-width:60ch }
+
+    .cta-row{ display:flex; gap:12px; align-items:center; margin-top:16px; flex-wrap:wrap }
+
+    .btn{
+      display:inline-flex; align-items:center; gap:10px; padding:12px 16px; border-radius:999px;
+      font-weight:700; cursor:pointer; border:0; text-decoration:none;
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .btn-primary{ background:linear-gradient(90deg,var(--accent1),#6366f1); color:#fff; box-shadow:0 12px 30px rgba(59,130,246,0.12) }
+    .btn-primary:hover{ transform:translateY(-3px); box-shadow:0 22px 46px rgba(59,130,246,0.16) }
+    .btn-ghost{ background:transparent; border:1px solid rgba(10,14,30,0.06); color:var(--dark) }
+
+    .features{ display:flex; gap:10px; margin-top:20px; flex-wrap:wrap }
+    .feature{
+      background:linear-gradient(180deg,#ffffff,#f3f6ff); padding:10px 12px; border-radius:12px;
+      display:flex; gap:10px; align-items:center; min-width:160px; box-shadow:0 8px 20px rgba(13,16,28,0.03)
+    }
+    .feature .ico{ width:34px; height:34px; border-radius:8px; display:grid; place-items:center; font-weight:700;
+      background:linear-gradient(180deg,#fff,#eef2ff); box-shadow: 0 6px 18px rgba(99,102,241,0.06) }
+
+    /* Right card */
+    .card {
+      border-radius:18px; padding:18px; position:relative; overflow:hidden;
+      background: linear-gradient(180deg, rgba(12, 149, 228, 0.98), rgba(47, 184, 10, 0.98));
+      color:#e6eefc; box-shadow:0 26px 70px rgba(10,14,30,0.55);
+    }
+
+    .card-head{ display:flex; justify-content:space-between; align-items:center; gap:10px }
+    .card-title{ font-weight:700; font-size:16px }
+    .card-sub{ color:#bcd2ff; font-size:12px }
+
+    /* animated avatars / illustrations */
+    .illus {
+      display:flex; gap:10px; margin-top:16px; align-items:center;
+    }
+    .person {
+      width:110px; height:110px; border-radius:12px; position:relative;
+      background:linear-gradient(135deg,#fff 0%,rgba(255,255,255,0.04) 100%);
+      border:1px solid rgba(255,255,255,0.03); padding:10px; overflow:hidden;
+      transform-origin:center; transition:transform .25s ease;
+    }
+    .person:hover{ transform:translateY(-8px) rotate(-1deg) }
+
+    /* Stats */
+    .stats { display:flex; gap:10px; margin-top:16px; flex-wrap:wrap }
+    .stat {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px solid rgba(255,255,255,0.03); padding:12px; border-radius:12px; min-width:120px;
+      text-align:center;
+    }
+    .stat .num{ font-weight:800; font-size:20px; color:#fff }
+    .stat .lbl{ color:#cfe3ff; font-size:12px; margin-top:6px }
+
+    /* bottom details & social */
+    .details { margin-top:18px; color:#cbd7ff; font-size:14px; line-height:1.4 }
+    .socials { margin-top:14px; display:flex; gap:12px; align-items:center }
+    .socials a { color: #dbeafe; text-decoration:none; font-weight:600; font-size:13px; opacity:.95 }
+    .socials a:hover{ text-decoration:underline }
+
+    /* footer */
+    .footer { margin-top:22px; display:flex; gap:10px; justify-content:space-between; align-items:center; color:var(--muted); font-size:13px }
+    @media (max-width:960px){ .footer{ flex-direction:column; align-items:flex-start; gap:8px } }
+
+    /* shimmer underline animation for CTA */
+    .shine{ position:relative; display:inline-block; overflow:hidden }
+    .shine::after{
+      content:""; position:absolute; inset:0; left:-60%;
+      background:linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+      transform:skewX(-20deg); animation:shiny 3s infinite;
+    }
+    @keyframes shiny{ 0%{ left:-60% } 60%{ left:120% } 100%{ left:120% } }
+
+    /* helper small text */
+    .small{ font-size:13px; color:rgba(255,255,255,0.75) }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="grid">
+      <!-- LEFT: HERO -->
+      <section class="hero" aria-labelledby="heroTitle">
+        <div class="kicker">✨ <strong>Launch</strong> — Free for 3 months</div>
+
+        <h1 id="heroTitle">SKILLCONNNECT Hire faster, work smarter — SkillConnect matches talent to projects in seconds.</h1>
+
+        <p class="lead">A modern marketplace built for college projects, startups and small teams — curated freelancers, instant proposals, and simple contracts.</p>
+
+        <div class="cta-row">
+          <a class="btn btn-primary shine" href="{% url 'home' %}">🚀 Get Started</a>
+          <a class="btn btn-ghost" href="#learn">📚 Learn More</a>
+          <a class="btn btn-ghost" href="{% url 'job_list' %}">🔎 Browse Jobs</a>
+        </div>
+
+        <div class="features" aria-hidden="true">
+          <div class="feature"><div class="ico">⚡</div> Fast proposals</div>
+          <div class="feature"><div class="ico">🧾</div> Clear briefs</div>
+          <div class="feature"><div class="ico">🔒</div> Secure messaging</div>
+          <div class="feature"><div class="ico">💳</div> Easy payouts</div>
+        </div>
+
+        <div style="margin-top:18px; display:flex; gap:12px; align-items:center; flex-wrap:wrap">
+          <div class="small">Trusted by students & startups — <strong style="color:#0b1220">no hidden fees</strong></div>
+          <div style="margin-left:auto"></div>
+        </div>
+
+        <!-- learn anchor -->
+        <div id="learn" style="margin-top:22px; border-radius:12px; padding:12px; background:linear-gradient(180deg,#fbfdff,#f3f7ff); border:1px solid rgba(13,16,28,0.03)">
+          <strong style="display:block; margin-bottom:6px">How it works</strong>
+          <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px">
+            <div style="padding:10px; border-radius:8px; background:#fff">1 • Post a clear brief</div>
+            <div style="padding:10px; border-radius:8px; background:#fff">2 • Get fast proposals</div>
+            <div style="padding:10px; border-radius:8px; background:#fff">3 • Hire & collaborate</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT: CARD with animated recruiter & freelancer -->
+      <aside class="card" aria-labelledby="cardTitle">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Live preview & stats</div>
+            <div class="card-sub">Recruiters & freelancers active now</div>
+          </div>
+          <div class="small">Updated <span id="stat-time">now</span></div>
+        </div>
+
+        <div class="illus" aria-hidden="true">
+          <!-- Recruiter illustration (animated SVG) -->
+          <div class="person" title="Recruiter — product manager">
+            <svg viewBox="0 0 120 120" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Recruiter">
+              <defs>
+                <linearGradient id="rgrad" x1="0" x2="1"><stop offset="0" stop-color="#60a5fa"/><stop offset="1" stop-color="#34d399"/></linearGradient>
+              </defs>
+              <rect width="100%" height="100%" rx="10" fill="url(#rgrad)" opacity="0.12"/>
+              <g transform="translate(10,8)">
+                <circle cx="40" cy="28" r="18" fill="#fff"/>
+                <rect x="8" y="56" width="64" height="48" rx="8" fill="#fff" opacity="0.06"/>
+                <rect x="14" y="62" width="20" height="6" rx="3" fill="#fff" opacity="0.12"/>
+                <rect x="14" y="72" width="40" height="6" rx="3" fill="#fff" opacity="0.06"/>
+              </g>
+            </svg>
+          </div>
+
+          <!-- Freelancer illustration (animated SVG) -->
+          <div class="person" title="Freelancer — developer">
+            <svg viewBox="0 0 120 120" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Freelancer">
+              <defs>
+                <linearGradient id="fgrad" x1="0" x2="1"><stop offset="0" stop-color="#a78bfa"/><stop offset="1" stop-color="#60a5fa"/></linearGradient>
+              </defs>
+              <rect width="100%" height="100%" rx="10" fill="url(#fgrad)" opacity="0.12"/>
+              <g transform="translate(10,8)">
+                <circle cx="40" cy="28" r="18" fill="#fff"/>
+                <rect x="8" y="56" width="64" height="48" rx="8" fill="#fff" opacity="0.06"/>
+                <rect x="46" y="62" width="20" height="6" rx="3" fill="#fff" opacity="0.12"/>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Live stats -->
+        <div class="stats" id="stats">
+          <div class="stat">
+            <div class="num" id="total_jobs">{{ total_jobs|default:0 }}</div>
+            <div class="lbl">Jobs</div>
+          </div>
+
+          <div class="stat">
+            <div class="num" id="total_users">{{ total_users|default:0 }}</div>
+            <div class="lbl">Users</div>
+          </div>
+
+          <div class="stat">
+            <div class="num" id="total_proposals">{{ total_proposals|default:0 }}</div>
+            <div class="lbl">Proposals</div>
+          </div>
+        </div>
+
+        <div class="details">
+          <p style="margin:6px 0 0 0">
+            SkillConnect helps you post clear briefs, discover top freelancers, and move from proposal to hire quickly.
+            Built with Django, SQLite and friendly UX for students & small teams.
+          </p>
+
+          <div class="socials" aria-label="Social links">
+            <a href="https://twitter.com/" target="_blank" rel="noopener">Twitter</a>
+            <a href="https://linkedin.com/" target="_blank" rel="noopener">LinkedIn</a>
+            <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
+            <a href="mailto:hello@skillconnect.example" target="_blank">Contact</a>
+          </div>
+        </div>
+
+        <div style="margin-top:14px; display:flex; gap:8px; align-items:center; justify-content:space-between">
+          <a class="btn btn-primary" href="{% url 'home' %}">Open App</a>
+          <div style="text-align:right; font-size:12px; color:rgba(255,255,255,0.8)">
+            <div>Active now: <strong id="active_now">—</strong></div>
+            <div style="font-size:11px; color:rgba(255,255,255,0.6)">Server time: <span id="server_time">—</span></div>
+          </div>
+        </div>
+
+      </aside>
+    </div>
+
+    <!-- EXTRA: testimonials or usage -->
+    <section style="margin-top:24px; display:grid; grid-template-columns:1fr 1fr; gap:18px">
+      <div style="padding:18px; border-radius:12px; background:linear-gradient(180deg,#fff,#fbfdff)">
+        <strong>Who uses SkillConnect?</strong>
+        <p style="margin-top:8px; color:#475569">Students building portfolios, bootstrapped startups shipping MVPs, and designers finding short contract work.</p>
+      </div>
+
+      <div style="padding:18px; border-radius:12px; background:linear-gradient(180deg,#fff,#fffaf6)">
+        <strong>Quick stats</strong>
+        <ul style="margin:10px 0 0 18px; color:#475569">
+          <li>Average time to first proposal: <strong>~30 mins</strong></li>
+          <li>Top skills: Django, Flutter, ML, UI/UX</li>
+          <li>Recommended match rate: <strong>83%</strong></li>
+        </ul>
+      </div>
+    </section>
+
+    <div class="footer">
+      <div style="display:flex; gap:12px; align-items:center;">
+        <div style="background:linear-gradient(90deg,#34d399,#60a5fa); padding:8px 12px; border-radius:10px; color:#071326; font-weight:800">S • SkillConnect</div>
+        <div style="color:var(--muted)">Made with ❤️ for learners</div>
+      </div>
+
+      <div style="display:flex; gap:12px; align-items:center;">
+        <a href="{% url 'home' %}" class="small">Open App</a>
+        <a href="#" class="small">Privacy</a>
+        <a href="#" class="small">Docs</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Update server time every second (client display)
+    function updateServerTime(){
+      const el = document.getElementById('server_time');
+      const now = new Date();
+      el.textContent = now.toLocaleString();
+    }
+    updateServerTime();
+    setInterval(updateServerTime, 1000);
+
+    // Try to fetch live stats from /api/stats/ (return JSON {total_jobs, total_users, total_proposals, active_now})
+    // If you don't create this endpoint, template defaults will show.
+    async function refreshStats(){
+      try{
+        const resp = await fetch('/api/stats/');
+        if(!resp.ok) throw new Error('no stats');
+        const data = await resp.json();
+        if(data.total_jobs !== undefined) document.getElementById('total_jobs').textContent = data.total_jobs;
+        if(data.total_users !== undefined) document.getElementById('total_users').textContent = data.total_users;
+        if(data.total_proposals !== undefined) document.getElementById('total_proposals').textContent = data.total_proposals;
+        if(data.active_now !== undefined) document.getElementById('active_now').textContent = data.active_now;
+        if(data.server_time) document.getElementById('stat-time').textContent = 'just now';
+      }catch(err){
+        // silent fallback — server may not have /api/stats/
+        console.debug('stats fetch failed', err);
+      }
+    }
+
+    // refresh on load and every 20 seconds
+    refreshStats();
+    setInterval(refreshStats, 20000);
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SkillConnect - Freelancer Access</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Poppins", Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #020617, #0ea5e9, #6366f1, #22c55e);
+            background-size: 280% 280%;
+            animation: bgMove 16s ease infinite;
+            color: #f9fafb;
+        }
+
+        @keyframes bgMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .auth-wrapper {
+            width: 95%;
+            max-width: 780px;
+            min-height: 480px;
+            border-radius: 26px;
+            background: rgba(15, 23, 42, 0.9);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            overflow: hidden;
+            position: relative;
+        }
+
+        @media (max-width: 768px) {
+            .auth-wrapper {
+                grid-template-columns: 1fr;
+            }
+            .side-panel {
+                display: none;
+            }
+        }
+
+        .glow-bg {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .glow {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            filter: blur(25px);
+            opacity: 0.45;
+        }
+
+        .glow.g1 {
+            background: #22c55e;
+            top: -40px;
+            left: -40px;
+        }
+
+        .glow.g2 {
+            background: #3b82f6;
+            bottom: -50px;
+            right: -70px;
+        }
+
+        .content-panel {
+            position: relative;
+            padding: 35px 40px;
+            z-index: 2;
+        }
+
+        .brand {
+            font-size: 14px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #9ca3af;
+            margin-bottom: 6px;
+        }
+
+        .title {
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #d1d5db;
+            margin-bottom: 24px;
+        }
+
+        .tab-switcher {
+            display: inline-flex;
+            background: rgba(15, 23, 42, 0.7);
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            padding: 3px;
+            margin-bottom: 24px;
+        }
+
+        .tab-btn {
+            border: none;
+            outline: none;
+            background: transparent;
+            color: #9ca3af;
+            font-size: 13px;
+            padding: 8px 18px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #0ea5e9, #6366f1);
+            color: #ecfeff;
+            box-shadow: 0 6px 18px rgba(56, 189, 248, 0.6);
+        }
+
+        form {
+            display: none;
+        }
+
+        form.active {
+            display: block;
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .form-row {
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 4px;
+            color: #e5e7eb;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 11px;
+            border-radius: 10px;
+            border: 1px solid rgba(148, 163, 184, 0.8);
+            background: rgba(15, 23, 42, 0.9);
+            color: #f9fafb;
+            font-size: 13px;
+            outline: none;
+            transition: border 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+        }
+
+        input:focus {
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.8);
+            transform: translateY(-1px);
+        }
+
+        .inline-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .inline-row a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+        .inline-row a:hover {
+            text-decoration: underline;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+        }
+
+        .checkbox-row input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+        }
+
+        .primary-btn {
+            width: 100%;
+            margin-top: 14px;
+            padding: 11px;
+            border-radius: 999px;
+            border: none;
+            outline: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #ecfdf5;
+            box-shadow: 0 12px 26px rgba(22, 163, 74, 0.7);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 32px rgba(22, 163, 74, 0.9);
+        }
+
+        .primary-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 8px 18px rgba(22, 163, 74, 0.7);
+        }
+
+        .small-text {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 14px;
+            text-align: center;
+        }
+
+        .small-text span {
+            color: #e5e7eb;
+            font-weight: 500;
+        }
+
+        .side-panel {
+            position: relative;
+            padding: 30px 26px;
+            background: radial-gradient(circle at top, rgba(56,189,248,0.25), transparent),
+                        radial-gradient(circle at bottom, rgba(52,211,153,0.23), transparent),
+                        rgba(15, 23, 42, 0.96);
+            border-left: 1px solid rgba(148, 163, 184, 0.4);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .side-heading {
+            font-size: 18px;
+            margin-bottom: 6px;
+        }
+
+        .side-desc {
+            font-size: 12px;
+            color: #cbd5f5;
+            margin-bottom: 18px;
+        }
+
+        .bullet-list {
+            font-size: 12px;
+            color: #e5e7eb;
+            list-style: none;
+        }
+
+        .bullet-list li {
+            margin-bottom: 8px;
+            display: flex;
+            gap: 6px;
+            align-items: flex-start;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 999px;
+            background: rgba(59,130,246,0.2);
+            color: #bfdbfe;
+            font-size: 11px;
+            margin-top: 10px;
+        }
+
+        .bottom-note {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+
+<div class="auth-wrapper">
+    <div class="glow-bg">
+        <div class="glow g1"></div>
+        <div class="glow g2"></div>
+    </div>
+
+    <!-- LEFT: Forms -->
+    <div class="content-panel">
+        <div class="brand">SkillConnect · Freelancer</div>
+        <div class="title">Welcome, Creator 👋</div>
+        <div class="subtitle">
+            Login or create a freelancer account to find projects, send proposals, and grow your career.
+        </div>
+
+        <!-- Tabs -->
+        <div class="tab-switcher">
+            <button class="tab-btn active" id="login-tab">Login</button>
+            <button class="tab-btn" id="signup-tab">Sign Up</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="active" method="post" action="{% url 'freelancer_login' %}">
+            {% csrf_token %}
+            <div class="form-grid">
+                <div class="form-row">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" name="email" placeholder="you@example.com" required>
+                </div>
+
+                <div class="form-row">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" name="password" placeholder="Enter your password" required>
+                    <div class="inline-row">
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="remember-me" name="remember">
+                            <label for="remember-me">Remember me</label>
+                        </div>
+                        <a href="#">Forgot password?</a>
+                    </div>
+                </div>
+
+                <button type="submit" class="primary-btn">Login as Freelancer</button>
+            </div>
+
+            <div class="small-text">
+                New to SkillConnect? <span>Switch to Sign Up tab</span> to join as a freelancer.
+            </div>
+        </form>
+
+        <!-- Sign Up Form -->
+
+        {% if signup_errors %}
+    <div style="background:#b91c1c; color:#fee2e2; padding:10px 14px; border-radius:10px; margin-bottom:12px; font-size:13px;">
+        <ul style="margin:0; padding-left:18px;">
+            {% for err in signup_errors %}
+                <li>{{ err }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+        <form id="signup-form" method="post" action="{% url 'freelancer_signup' %}">
+            {% csrf_token %}
+            <div class="form-grid">
+                <div class="form-row">
+                    <label for="full-name">Full Name</label>
+                    <input type="text" id="full-name" name="full_name" placeholder="e.g. Priya Sharma" required>
+                </div>
+
+                <div class="form-row">
+                    <label for="signup-email">Email</label>
+                    <input type="email" id="signup-email" name="email" placeholder="you@example.com" required>
+                </div>
+
+                <div class="form-row">
+                    <label for="primary-skill">Primary Skill</label>
+                    <input type="text" id="primary-skill" name="primary_skill" placeholder="e.g. Python Developer, UI/UX Designer" required>
+                </div>
+
+                <div class="form-row">
+                    <label for="hourly-rate">Expected Hourly Rate (optional)</label>
+                    <input type="number" step="0.01" id="hourly-rate" name="hourly_rate" placeholder="e.g. 25">
+                </div>
+
+                <div class="form-row">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" name="password" placeholder="Create a strong password" required>
+                </div>
+
+                <div class="form-row">
+                    <label for="signup-confirm-password">Confirm Password</label>
+                    <input type="password" id="signup-confirm-password" name="confirm_password" placeholder="Re-enter your password" required>
+                </div>
+
+                <div class="checkbox-row">
+                    <input type="checkbox" id="terms" name="terms" required>
+                    <label for="terms">I agree to the <a href="#">Terms & Conditions</a></label>
+                </div>
+
+                <button type="submit" class="primary-btn">Create Freelancer Account</button>
+            </div>
+
+            <div class="small-text">
+                Already have an account? <span>Switch to Login tab</span> to continue.
+            </div>
+        </form>
+    </div>
+
+    <!-- RIGHT: Info Panel -->
+    <div class="side-panel">
+        <div>
+            <div class="side-heading">Turn your skills into income</div>
+            <div class="side-desc">
+                Find projects that match your skills, get hired by recruiters, and build a strong portfolio.
+            </div>
+
+            <ul class="bullet-list">
+                <li>💼 Get matched with relevant jobs across multiple categories.</li>
+                <li>📨 Send proposals, chat with clients, and negotiate directly.</li>
+                <li>⭐ Build your profile, ratings, and long-term client relationships.</li>
+            </ul>
+
+            <div class="badge">Built for Freelancers, Students & Creators</div>
+        </div>
+
+        <div class="bottom-note">
+            Tip: Complete your profile (skills, rates, bio) to improve your chances of getting hired.
+        </div>
+    </div>
+</div>
+
+<script>
+    const loginTab = document.getElementById("login-tab");
+    const signupTab = document.getElementById("signup-tab");
+    const loginForm = document.getElementById("login-form");
+    const signupForm = document.getElementById("signup-form");
+
+    loginTab.addEventListener("click", () => {
+        loginTab.classList.add("active");
+        signupTab.classList.remove("active");
+        loginForm.classList.add("active");
+        signupForm.classList.remove("active");
+    });
+
+    signupTab.addEventListener("click", () => {
+        signupTab.classList.add("active");
+        loginTab.classList.remove("active");
+        signupForm.classList.add("active");
+        loginForm.classList.remove("active");
+    });
+</script>
+
+</body>
+</html>
