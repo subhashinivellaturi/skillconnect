@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -126,14 +127,25 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-#email verification
-# settings.py
+# Email configuration
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "yourgmail@gmail.com"
-EMAIL_HOST_PASSWORD = "your_app_password"  # App password if using Gmail 2FA
+EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')  # Set in .env file
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')  # Set in .env file
+
+# Default email sender
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@skillconnect.com')
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+# Email Error Handling - log errors but don't break the application
+if not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
+    import warnings
+    warnings.warn(
+        "EMAIL_HOST_USER or EMAIL_HOST_PASSWORD not configured. "
+        "Add them to your .env file to enable email sending."
+    )
 
 
 

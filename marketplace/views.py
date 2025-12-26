@@ -1,113 +1,116 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404 
+from django.http import JsonResponse
 from django.contrib.auth import authenticate, login
-from django.contrib.auth.hashers import make_password
-from .models import User
 from django.contrib.auth.decorators import login_required
-from .models import Job, Proposal, FreelancerProfile
 from django.contrib import messages
-from .forms import JobForm, ProposalForm
-from datetime import timedelta
-from django.utils import timezone
 
+from .models import User, Job, Proposal, Profile
+from .forms import JobForm, ProposalForm
 from django.core.mail import send_mail
 from django.conf import settings
-from django.urls import reverse
 
 
-from django.http import JsonResponse
-
-from django.http import JsonResponse, HttpResponseBadRequest
-from django.views.decorators.http import require_POST
-#test
-from django.core.exceptions import ValidationError
-from django.core.files.images import get_image_dimensions
-from .models import Profile
-
+# --------------------
+# LANDING / HOME
+# --------------------
 def landing_page(request):
-    return render(request, 'marketplace/landing_page.html')
+    return render(request, "marketplace/landing_page.html")
+
 
 def home(request):
-    return render(request, 'marketplace/home.html')
+    return render(request, "marketplace/home.html")
 
+
+# --------------------
+# AUTH PAGES
+# --------------------
 def recruiter_auth(request):
-    return render(request, 'marketplace/recruiter.html')
+    return render(request, "marketplace/recruiter.html")
+
 
 def freelancer_auth(request):
-    return render(request, 'marketplace/freelancer.html')
-
-def recruiter_signup(request):
-    if request.method == "POST":
-        company = request.POST.get("company_name")
-        name = request.POST.get("full_name")
-        email = request.POST.get("email")
-        password = request.POST.get("password")
-
-        if User.objects.filter(username=email).exists():
-            return render(request, "marketplace/recruiter.html", {
-                "error": "Email already registered!",
-            })
-
-        user = User.objects.create(
-            username=email,
-            first_name=name,
-            email=email,
-            password=make_password(password),
-            role="client"
-        )
-        user.save()
-
-        login(request, user)
-        return redirect("job_create")  # recruiter dashboard
-
-    return redirect("recruiter_auth")
+    return render(request, "marketplace/freelancer.html")
 
 
-
-
+# --------------------
+# LOGIN / SIGNUP
+# --------------------
+# --------------------
+# LOGIN / SIGNUP
+# --------------------
 def recruiter_login(request):
     if request.method == "POST":
         email = request.POST.get("email")
         password = request.POST.get("password")
 
         user = authenticate(request, username=email, password=password)
-
-        if user is not None and user.role == "client":
+        if user and user.role == "client":
             login(request, user)
+
+            # Email on successful login
+            if user.email:
+                send_mail(
+                    subject="Login notification",
+                    message="You have successfully logged in to your account.",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
+                    fail_silently=True,
+                )
+
             return redirect("recruiter_dashboard")
-        else:
-            return render(request, "marketplace/recruiter.html", {
-                "login_error": "Invalid credentials!"
-            })
 
-    return redirect("recruiter_auth")
+        messages.error(request, "Invalid credentials")
+
+    # render the combined recruiter page
+    return render(request, "marketplace/recruiter.html")
 
 
-def freelancer_signup(request):
+def recruiter_signup(request):
     if request.method == "POST":
-        name = request.POST.get("full_name")
-        skill = request.POST.get("primary_skill")
+        full_name = request.POST.get("full_name")
         email = request.POST.get("email")
         password = request.POST.get("password")
+        confirm_password = request.POST.get("confirm_password")
+
+        signup_errors = []
+
+        if password != confirm_password:
+            signup_errors.append("Passwords do not match.")
 
         if User.objects.filter(username=email).exists():
-            return render(request, "marketplace/freelancer.html", {
-                "error": "Email already registered!",
-            })
+            signup_errors.append("An account with this email already exists.")
 
-        user = User.objects.create(
+        if signup_errors:
+            return render(
+                request,
+                "marketplace/recruiter.html",
+                {"signup_errors": signup_errors},
+            )
+
+        # create client user (recruiter)
+        user = User.objects.create_user(
             username=email,
-            first_name=name,
             email=email,
-            password=make_password(password),
-            role="freelancer"
+            password=password,
+            first_name=full_name,
+            role="client",
         )
-        user.save()
 
-        login(request, user)
-        return redirect("job_list")  # freelancer dashboard
+        # Email on successful registration
+        if user.email:
+            send_mail(
+                subject="Welcome to SkillConnect",
+                message="Your recruiter account has been registered successfully.",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=True,
+            )
 
-    return redirect("freelancer_auth")
+        messages.success(request, "Recruiter registered successfully")
+        return redirect("recruiter_auth")  # loads recruiter.html
 
+    # GET fallback
+    return render(request, "marketplace/recruiter.html")
 
 
 def freelancer_login(request):
@@ -116,469 +119,228 @@ def freelancer_login(request):
         password = request.POST.get("password")
 
         user = authenticate(request, username=email, password=password)
-
-        if user is not None and user.role == "freelancer":
+        if user and user.role == "freelancer":
             login(request, user)
+
+            # Email on successful login
+            if user.email:
+                send_mail(
+                    subject="Login notification",
+                    message="You have successfully logged in to your account.",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
+                    fail_silently=True,
+                )
+
             return redirect("freelancer_dashboard")
-        else:
-            return render(request, "marketplace/freelancer.html", {
-                "login_error": "Invalid credentials!"
-            })
 
-    return redirect("freelancer_auth")
+        messages.error(request, "Invalid credentials")
+
+    return render(request, "marketplace/freelancer.html")
 
 
+def freelancer_signup(request):
+    if request.method == "POST":
+        full_name = request.POST.get("full_name")
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        confirm_password = request.POST.get("confirm_password")
+
+        signup_errors = []
+
+        if password != confirm_password:
+            signup_errors.append("Passwords do not match.")
+
+        if User.objects.filter(username=email).exists():
+            signup_errors.append("An account with this email already exists.")
+
+        if signup_errors:
+            return render(
+                request,
+                "marketplace/freelancer.html",
+                {"signup_errors": signup_errors},
+            )
+
+        # create freelancer user
+        user = User.objects.create_user(
+            username=email,
+            email=email,
+            password=password,
+            first_name=full_name,
+            role="freelancer",
+        )
+
+        # Email on successful registration
+        if user.email:
+            send_mail(
+                subject="Welcome to SkillConnect",
+                message="Your freelancer account has been registered successfully.",
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                fail_silently=True,
+            )
+
+        messages.success(request, "Freelancer registered successfully")
+        return redirect("freelancer_auth")
+
+    return render(request, "marketplace/freelancer.html")
 
 
-
-
-
+# --------------------
+# DASHBOARDS
+# --------------------
 @login_required
 def recruiter_dashboard(request):
-    # base querysets (no slicing)
-    jobs_qs = Job.objects.filter(client=request.user).order_by('-created_at')
-    proposals_qs = Proposal.objects.filter(job__client=request.user).order_by('-created_at')
-
-    context = {
-        "active_jobs": Job.objects.filter(client=request.user, status="open").count(),
-        "total_proposals": proposals_qs.count(),
-        "hired_freelancers": proposals_qs.filter(status="accepted").count(),
-        "jobs_this_week": jobs_qs.count(),          # you can later add date filter
-        "unread_proposals": proposals_qs.filter(status="pending").count(),
-        "hires_this_month": proposals_qs.filter(status="accepted").count(),
-        "pending_verifications": 0,                 # if you add this later
-        "recent_jobs": jobs_qs[:5],                 # slicing is OK here
-        "recent_proposals": proposals_qs[:6],       # and here
-    }
-
-    return render(request, "marketplace/recruiter_dashboard.html", context)
-
-
-
-
-
+    jobs = Job.objects.filter(client=request.user)
+    return render(request, "marketplace/recruiter_dashboard.html", {"jobs": jobs})
 
 
 @login_required
 def freelancer_dashboard(request):
-    user = request.user
-
-    # Base queryset (NO slicing here)
-    proposals_qs = Proposal.objects.filter(freelancer=user).order_by('-created_at')
-
-    # Now you can safely filter
-    jobs_won_qs = proposals_qs.filter(status="accepted")
-    active_contracts = jobs_won_qs.filter(job__status="in_progress")
-
-    # Slicing is only used for FINAL display, not calculations
-    recent_proposals = proposals_qs[:8]
-
-    # Recommended jobs
-    recommended_jobs = Job.objects.filter(status="open").order_by("-created_at")[:6]
-
-    # Primary skill
-    primary_skill = ""
-    try:
-        profile = FreelancerProfile.objects.get(user=user)
-        primary_skill = ", ".join([s.name for s in profile.skills.all()]) or ""
-    except FreelancerProfile.DoesNotExist:
-        pass
-
-    total_proposals = proposals_qs.count()
-
-    context = {
-        "user": user,
-        "primary_skill": primary_skill or "Freelancer",
-
-        # Stats
-        "active_proposals": proposals_qs.filter(status="pending").count(),
-        "open_jobs_near_skill": recommended_jobs.count(),
-        "total_proposals": total_proposals,
-        "proposals_this_week": proposals_qs.count(),
-        "jobs_won": jobs_won_qs.count(),
-
-        "success_rate": round(
-            (jobs_won_qs.count() / max(1, total_proposals)) * 100, 1
-        ),
-
-        "active_contracts": active_contracts.count(),
-        "contracts_ending_soon": 0,
-        "estimated_earnings": 0,
-
-        # Display data
-        "recommended_jobs": recommended_jobs,
-        "recent_proposals": recent_proposals,
-    }
-
-    return render(request, "marketplace/freelancer_dashboard.html", context)
+    jobs = Job.objects.filter(status="open")
+    return render(request, "marketplace/freelancer_dashboard.html", {"jobs": jobs})
 
 
-
+# --------------------
+# JOBS
+# --------------------
 @login_required
 def job_create(request):
-    if request.method == "POST":
-        form = JobForm(request.POST)
-        if form.is_valid():
-            job = form.save(commit=False)
-            job.client = request.user
-            job.save()
+    form = JobForm(request.POST or None)
 
-            # ✅ SUCCESS MESSAGE
-            messages.success(request, "🎉 Job posted successfully!")
-
-            return redirect("job_list")
-    else:
-        form = JobForm()
+    if request.method == "POST" and form.is_valid():
+        job = form.save(commit=False)
+        job.client = request.user
+        job.save()
+        return redirect("recruiter_dashboard")
 
     return render(request, "marketplace/job_create.html", {"form": form})
 
 
-
-
 @login_required
+def job_edit(request, pk):
+    job = get_object_or_404(Job, pk=pk, client=request.user)
+    form = JobForm(request.POST or None, instance=job)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        return redirect("recruiter_dashboard")
+
+    return render(request, "marketplace/job_edit.html", {"form": form})
+
+
 def job_list(request):
-    user = request.user
-
-    if getattr(user, "role", None) == "client":
-        # Recruiter: show only their jobs
-        jobs = Job.objects.filter(client=user).order_by("-created_at")
-    else:
-        # Freelancer: show all open jobs
-        jobs = Job.objects.filter(status="open").order_by("-created_at")
-
+    jobs = Job.objects.filter(status="open")
     return render(request, "marketplace/job_list.html", {"jobs": jobs})
 
 
-
-
-
-
-
-
-
-@login_required
 def job_detail(request, pk):
     job = get_object_or_404(Job, pk=pk)
-
-    proposal_form = None
-    # Only freelancers can apply
-    if getattr(request.user, "role", None) == "freelancer" and request.user != job.client:
-        if request.method == "POST":
-            form = ProposalForm(request.POST)
-            if form.is_valid():
-                proposal = form.save(commit=False)
-                proposal.job = job
-                proposal.freelancer = request.user
-                proposal.save()
-                messages.success(request, "Your proposal has been submitted! 🎉")
-                return redirect("job_detail", pk=job.pk)
-            else:
-                proposal_form = form
-        else:
-            proposal_form = ProposalForm()
-    # Recruiter or others
-    context = {
-        "job": job,
-        "proposal_form": proposal_form,
-    }
-    return render(request, "marketplace/job_detail.html", context)
+    return render(request, "marketplace/job_detail.html", {"job": job})
 
 
-
-
+# --------------------
+# PROPOSALS
+# --------------------
 @login_required
 def proposal_create(request, job_id):
-    job = get_object_or_404(Job, pk=job_id)
+    job = get_object_or_404(Job, id=job_id)
+    proposal = Proposal.objects.create(
+        job=job,
+        freelancer=request.user,
+        cover_letter=request.POST.get("cover_letter")
+    )
 
-    # Only freelancers (and not the client) can apply
-    if getattr(request.user, "role", None) != "freelancer" or request.user == job.client:
-        messages.error(request, "You are not allowed to submit a proposal for this job.")
-        return redirect("job_detail", pk=job.pk)
+    # Email to freelancer
+    if request.user.email:
+        send_mail(
+            subject="Application submitted",
+            message="Your application for the job role is submitted. After review, we will update you.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[request.user.email],
+            fail_silently=True,
+        )
 
-    if job.status != "open":
-        messages.error(request, "This job is not accepting new proposals.")
-        return redirect("job_detail", pk=job.pk)
-
-    if request.method == "POST":
-        form = ProposalForm(request.POST)
-        if form.is_valid():
-            proposal = form.save(commit=False)
-            proposal.job = job
-            proposal.freelancer = request.user
-            proposal.status = "pending"
-            proposal.save()
-
-            messages.success(request, "Your proposal has been submitted successfully! 🎉")
-            return redirect("job_detail", pk=job.pk)
-        else:
-            # Re-render job_detail with errors in the form
-            return render(request, "marketplace/job_detail.html", {
-                "job": job,
-                "proposal_form": form,
-            })
-
-    # If someone opens this URL via GET, redirect back
-    return redirect("job_detail", pk=job.pk)
-
-
-
+    return redirect("job_list")
 
 
 @login_required
 def proposal_accept(request, proposal_id):
-    proposal = get_object_or_404(Proposal, pk=proposal_id)
-    job = proposal.job
+    proposal = get_object_or_404(Proposal, id=proposal_id)
+    proposal.status = "accepted"
+    proposal.save()
 
-    # only job owner (recruiter) can accept
-    if getattr(request.user, "role", None) != "client" or request.user != job.client:
-        messages.error(request, "You are not allowed to modify this proposal.")
-        return redirect("job_detail", pk=job.pk)
+    freelancer_email = proposal.freelancer.email
+    if freelancer_email:
+        send_mail(
+            subject="Proposal status update",
+            message="Your proposal for the applied role is accepted.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[freelancer_email],
+            fail_silently=True,
+        )
 
-    if request.method == "POST":
-        proposal.status = "accepted"
-        proposal.save()
-
-        # (optional) mark job as in progress
-        if job.status == "open":
-            job.status = "in_progress"
-            job.save()
-
-        # ✅ send email to freelancer
-        try:
-            job_link = request.build_absolute_uri(
-                reverse("job_detail", args=[job.pk])
-            )
-
-            subject = f"Your proposal was ACCEPTED for '{job.title}'"
-            message = (
-                f"Hi {proposal.freelancer.first_name or 'Freelancer'},\n\n"
-                f"Good news! The client '{job.client.first_name}' has ACCEPTED "
-                f"your proposal for the job:\n\n"
-                f"    {job.title}\n\n"
-                f"Bid amount: ₹{proposal.bid_amount}\n"
-                f"Job link: {job_link}\n\n"
-                f"You can now coordinate with the client on next steps.\n\n"
-                f"– SkillConnect"
-            )
-
-            send_mail(
-                subject=subject,
-                message=message,
-                from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[proposal.freelancer.email],
-                fail_silently=True,  # avoid crashing if email fails
-            )
-        except Exception:
-            # You can log this if you want; we just ignore for now
-            pass
-
-        messages.success(request, "You have accepted this proposal ✅")
-        return redirect("job_detail", pk=job.pk)
-
-    return redirect("job_detail", pk=job.pk)
+    return redirect("recruiter_dashboard")
 
 
 @login_required
 def proposal_reject(request, proposal_id):
-    proposal = get_object_or_404(Proposal, pk=proposal_id)
-    job = proposal.job
+    proposal = get_object_or_404(Proposal, id=proposal_id)
+    proposal.status = "rejected"
+    proposal.save()
 
-    # only job owner (recruiter) can reject
-    if getattr(request.user, "role", None) != "client" or request.user != job.client:
-        messages.error(request, "You are not allowed to modify this proposal.")
-        return redirect("job_detail", pk=job.pk)
+    freelancer_email = proposal.freelancer.email
+    if freelancer_email:
+        send_mail(
+            subject="Proposal status update",
+            message="Your proposal for the applied role is rejected.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[freelancer_email],
+            fail_silently=True,
+        )
 
-    if request.method == "POST":
-        proposal.status = "rejected"
-        proposal.save()
-
-        # ✅ send email to freelancer
-        try:
-            job_link = request.build_absolute_uri(
-                reverse("job_detail", args=[job.pk])
-            )
-
-            subject = f"Your proposal was REJECTED for '{job.title}'"
-            message = (
-                f"Hi {proposal.freelancer.first_name or 'Freelancer'},\n\n"
-                f"The client '{job.client.first_name}' has REJECTED "
-                f"your proposal for the job:\n\n"
-                f"    {job.title}\n\n"
-                f"Bid amount: ₹{proposal.bid_amount}\n"
-                f"Job link: {job_link}\n\n"
-                f"Don't be discouraged – you can keep applying to other jobs "
-                f"on SkillConnect.\n\n"
-                f"– SkillConnect"
-            )
-
-            send_mail(
-                subject=subject,
-                message=message,
-                from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[proposal.freelancer.email],
-                fail_silently=True,
-            )
-        except Exception:
-            pass
-
-        messages.success(request, "You have rejected this proposal ❌")
-        return redirect("job_detail", pk=job.pk)
-
-    return redirect("job_detail", pk=job.pk)
+    return redirect("recruiter_dashboard")
 
 
 
 
 
-
-
-#landing page statics
+# --------------------
+# API STATS
+# --------------------
 def api_stats(request):
     return JsonResponse({
-        "total_jobs": Job.objects.count(),
-        "total_users": User.objects.count(),
-        "total_proposals": Proposal.objects.count(),
-        "active_now":  (User.objects.filter(is_active=True).count()),  # example
-        "server_time": timezone.now().isoformat(),
+        "jobs": Job.objects.count(),
+        "clients": User.objects.filter(role="client").count(),
+        "freelancers": User.objects.filter(role="freelancer").count(),
+        "proposals": Proposal.objects.count(),
     })
 
 
-
-#recruiter profile
+# --------------------
+# PROFILES
+# --------------------
 @login_required
-def recruiter_profile(request, pk=None):
-    recruiter = request.user  # logged-in recruiter
-
-    # if pk is provided (public profile view)
-    if pk:
-        recruiter = get_object_or_404(User, pk=pk)
-
-    # Fetch data for profile page
-    posted_jobs = Job.objects.filter(client=recruiter).order_by("-created_at")
-    recent_activity = []   # Fill with your activity model if you have one
-
-    context = {
-        "recruiter": recruiter,
-        "posted_jobs": posted_jobs,
-        "recent_activity": recent_activity,
-    }
-    return render(request, "marketplace/recruiter_profile.html", context)
-
-
-
-
-@login_required
-def job_edit(request, pk):
-    job = get_object_or_404(Job, pk=pk)
-
-    # Only owner (recruiter) can edit
-    if request.user != job.client:
-        messages.error(request, "You are not allowed to edit this job.")
-        return redirect("job_detail", pk=job.pk)
-
-    if request.method == "POST":
-        form = JobForm(request.POST, instance=job)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Job updated.")
-            return redirect("job_detail", pk=job.pk)
-    else:
-        form = JobForm(instance=job)
-
-    return render(request, "marketplace/job_edit.html", {"form": form, "job": job})
+def recruiter_profile(request, pk):
+    user = get_object_or_404(User, pk=pk, role="client")
+    return render(request, "marketplace/recruiter_profile.html", {"user": user})
 
 
 @login_required
 def recruiter_profile_edit(request, pk):
-    recruiter = get_object_or_404(User, pk=pk)
-
-    if request.user != recruiter:
-        messages.error(request, "Not allowed")
-        return redirect("recruiter_profile", pk=pk)
-
-    # ✅ SAFE: creates profile if missing
-    profile, created = Profile.objects.get_or_create(user=recruiter)
+    profile = get_object_or_404(Profile, user_id=pk)
 
     if request.method == "POST":
-        profile.bio = request.POST.get("bio", "")
-        profile.company = request.POST.get("company", "")
-        profile.city = request.POST.get("profile_city", "")
-
-        image = request.FILES.get("profile_image")
-
-        if image:
-            # Image validation
-            if image.size > 2 * 1024 * 1024:
-                messages.error(request, "Image must be under 2MB")
-                return redirect("recruiter_profile_edit", pk=pk)
-
-            if not image.content_type.startswith("image/"):
-                messages.error(request, "Invalid image type")
-                return redirect("recruiter_profile_edit", pk=pk)
-
-            profile.profile_image = image
-
+        profile.bio = request.POST.get("bio")
+        profile.city = request.POST.get("city")
+        profile.company = request.POST.get("company")
         profile.save()
-        messages.success(request, "Profile updated successfully")
         return redirect("recruiter_profile", pk=pk)
 
-    return render(request, "recruiter/profile_edit.html", {
-        "profile": profile
-    })
+    return render(request, "marketplace/recruiter_profile.html", {"profile": profile})
 
 
-
-#test
-
-def validate_profile_image(image):
-    # 1️⃣ File size (2 MB limit)
-    max_size = 2 * 1024 * 1024  # 2 MB
-    if image.size > max_size:
-        raise ValidationError("Image size should be less than 2 MB.")
-
-    # 2️⃣ File extension check
-    valid_extensions = ['jpg', 'jpeg', 'png', 'webp']
-    ext = image.name.split('.')[-1].lower()
-    if ext not in valid_extensions:
-        raise ValidationError("Only JPG, JPEG, PNG, or WEBP images are allowed.")
-
-    # 3️⃣ Ensure it is a real image
-    try:
-        get_image_dimensions(image)
-    except Exception:
-        raise ValidationError("Uploaded file is not a valid image.")
-    
-
-
-#freelancer profile
 @login_required
 def freelancer_profile(request, pk):
-    freelancer = get_object_or_404(User, pk=pk)
-
-    tech_stack_list = []
-    if hasattr(freelancer, "profile") and freelancer.profile.tech_stack:
-        tech_stack_list = [
-            t.strip() for t in freelancer.profile.tech_stack.split(",")
-        ]
-
-
-    skills_list = []
-    if hasattr(freelancer, "profile") and freelancer.profile.skills:
-        skills_list = [
-            s.strip() for s in freelancer.profile.skills.split(",")
-        ]    
-
-    return render(request,"marketplace/freelancer_profile.html", {
-        "freelancer": freelancer, "tech_stack_list": tech_stack_list, "skills_list": skills_list,
-    })
-
-
-
-
-
-
-
-
-
-
-
+    user = get_object_or_404(User, pk=pk, role="freelancer")
+    return render(request, "marketplace/freelancer_profile.html", {"user": user})
